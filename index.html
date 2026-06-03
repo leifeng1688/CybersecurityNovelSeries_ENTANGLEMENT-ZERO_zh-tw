@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>糾纏態：第零號入侵</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;700&family=Share+Tech+Mono&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+/* ─── ROOT VARIABLES ─── */
+:root {
+  --void: #030508;
+  --deep: #060d14;
+  --surface: #0a1520;
+  --panel: #0d1e2e;
+  --border: #1a3448;
+  --dim: #1e4060;
+  --quantum: #00e5ff;
+  --entangle: #7b2fff;
+  --danger: #ff2d55;
+  --warn: #ffaa00;
+  --safe: #00ff88;
+  --text-primary: #d4e8f0;
+  --text-secondary: #6a96b0;
+  --text-dim: #2a4a60;
+  --font-serif: 'Zen Old Mincho', 'Noto Serif TC', serif;
+  --font-mono: 'Share Tech Mono', monospace;
+  --glow-q: 0 0 20px rgba(0,229,255,0.4), 0 0 60px rgba(0,229,255,0.15);
+  --glow-e: 0 0 20px rgba(123,47,255,0.5), 0 0 60px rgba(123,47,255,0.2);
+}
+
+/* ─── RESET & BASE ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  color: var(--text-primary);
+  font-family: var(--font-serif);
+  line-height: 1.9;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+::selection { background: rgba(0,229,255,0.2); color: var(--quantum); }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: var(--dim); }
+::-webkit-scrollbar-thumb:hover { background: var(--quantum); }
+
+/* ─── GLOBAL NOISE OVERLAY ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.6;
+}
+
+/* ─── HEADER / HERO ─── */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 4rem 2rem;
+}
+
+/* HERO: particle field canvas background */
+#hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 800px;
+}
+
+.hero-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.4em;
+  color: var(--quantum);
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeSlideUp 1s 0.5s forwards;
+}
+
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeSlideUp 1s 0.8s forwards;
+}
+
+.hero-title .kanji-main {
+  display: block;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--quantum) 50%, var(--entangle) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 30px rgba(0,229,255,0.3));
+}
+
+.hero-title .sub {
+  display: block;
+  font-size: 0.28em;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  color: var(--text-secondary);
+  -webkit-text-fill-color: var(--text-secondary);
+  background: none;
+  margin-top: 1rem;
+  filter: none;
+}
+
+.hero-meta {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  margin-top: 3rem;
+  opacity: 0;
+  animation: fadeSlideUp 1s 1.2s forwards;
+}
+
+.hero-meta span { color: var(--quantum); }
+
+/* ─── CHAPTER SCROLL INDICATOR ─── */
+.scroll-hint {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  animation: fadeIn 1s 2s forwards;
+}
+
+.scroll-hint span {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.scroll-line {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, var(--quantum), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+
+/* ─── CHAPTER CONTAINER ─── */
+.chapters {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 4rem 2rem 8rem;
+}
+
+/* ─── CHAPTER BLOCK ─── */
+.chapter {
+  margin-bottom: 8rem;
+  position: relative;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.chapter.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Chapter header */
+.ch-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.ch-number {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  color: var(--quantum);
+  opacity: 0.6;
+  white-space: nowrap;
+  padding-top: 0.3rem;
+  min-width: 60px;
+}
+
+.ch-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+  position: relative;
+}
+
+.ch-title::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--quantum);
+  margin-top: 1rem;
+  opacity: 0.5;
+}
+
+/* ─── ANIMATION CANVAS (per chapter) ─── */
+.ch-visual {
+  width: 100%;
+  height: 280px;
+  position: relative;
+  margin-bottom: 2.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--deep);
+}
+
+.ch-visual canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.visual-label {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+/* ─── CHAPTER TEXT ─── */
+.ch-body {
+  font-size: clamp(0.92rem, 1.5vw, 1.05rem);
+  color: var(--text-primary);
+  line-height: 2.0;
+  letter-spacing: 0.04em;
+}
+
+.ch-body p { margin-bottom: 1.6em; }
+
+.ch-body .highlight {
+  color: var(--quantum);
+  font-style: italic;
+}
+
+.ch-body .danger-text { color: var(--danger); }
+
+.ch-body .code-inline {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: rgba(0,229,255,0.08);
+  border: 1px solid rgba(0,229,255,0.15);
+  padding: 0.1em 0.5em;
+  border-radius: 3px;
+  color: var(--quantum);
+}
+
+/* ─── DIVIDER ─── */
+.ch-divider {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 4rem 0;
+  opacity: 0.3;
+}
+
+.ch-divider::before,
+.ch-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border), transparent);
+}
+
+.ch-divider-symbol {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  color: var(--text-dim);
+}
+
+/* ─── TERMINAL BLOCK ─── */
+.terminal-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--quantum);
+  border-radius: 2px;
+  padding: 1.5rem 2rem;
+  margin: 2rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.terminal-block::before {
+  content: attr(data-label);
+  position: absolute;
+  top: 0.5rem;
+  right: 1rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.terminal-block .t-quantum { color: var(--quantum); }
+.terminal-block .t-danger { color: var(--danger); }
+.terminal-block .t-warn { color: var(--warn); }
+.terminal-block .t-safe { color: var(--safe); }
+.terminal-block .t-entangle { color: var(--entangle); }
+
+/* ─── POSTSCRIPT ─── */
+.postscript {
+  margin-top: 8rem;
+  padding: 4rem;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--deep), var(--surface));
+  position: relative;
+  overflow: hidden;
+}
+
+.postscript::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(123,47,255,0.08), transparent 70%);
+  pointer-events: none;
+}
+
+.postscript h3 {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.4em;
+  color: var(--entangle);
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.postscript p {
+  font-size: 0.98rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.2em;
+  line-height: 2;
+}
+
+.postscript .final-line {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ─── FOOTER ─── */
+footer {
+  text-align: center;
+  padding: 4rem 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+}
+
+footer span { color: var(--quantum); }
+
+/* ─── KEYFRAMES ─── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes scrollPulse {
+  0%, 100% { transform: scaleY(1); opacity: 0.5; }
+  50% { transform: scaleY(1.3); opacity: 1; }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* ─── SCANLINE OVERLAY ─── */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 600px) {
+  .ch-visual { height: 200px; }
+  .postscript { padding: 2rem; }
+  .ch-header { flex-direction: column; gap: 0.5rem; }
+  .ch-number { min-width: unset; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ════════════════════════════════ HERO ════════════════════════════════ -->
+<section class="hero">
+  <canvas id="hero-canvas"></canvas>
+
+  <div class="hero-content">
+    <div class="hero-label">APT-Ω · CLASSIFIED · 2157.09.14</div>
+    <h1 class="hero-title">
+      <span class="kanji-main">糾纏態</span>
+      <span class="sub">第零號入侵 · ENTANGLEMENT ZERO</span>
+    </h1>
+    <p class="hero-meta">
+      宇宙編號 <span>Ω-4471</span> ／ 量子簽名異常 <span>∆φ = 2.7×10⁻³⁵</span> ／ 威脅等級 <span>∞</span>
+    </p>
+  </div>
+
+  <div class="scroll-hint">
+    <span>捲動閱讀</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════ CHAPTERS ════════════════════════════════ -->
+<main class="chapters">
+
+  <!-- ── CH1 ── -->
+  <article class="chapter" id="ch1">
+    <div class="ch-header">
+      <div class="ch-number">CH.01</div>
+      <h2 class="ch-title">觀測即改變</h2>
+    </div>
+    <div class="ch-visual">
+      <canvas id="c1"></canvas>
+      <div class="visual-label">QUANTUM BASELINE DRIFT</div>
+    </div>
+    <div class="ch-body">
+      <p>陳以諾第一次注意到異常，是在他第三十七歲生日的前一天深夜。那是2157年的秋天，地球聯合研究院位於青藏高原的量子計算分部，海拔四千八百米，空氣稀薄得像一個謊言。</p>
+      <p>他盯著螢幕上的數據，眉頭皺成一道深溝。量子糾纏實驗組的數據看起來完全正常——粒子對的自旋相關性維持在理論預測的<span class="code-inline">0.998</span>，貝爾不等式違反指數穩定。</p>
+      <p class="highlight">一切都完美得像一首沒有雜音的交響樂。正是這種完美，讓他感到不安。</p>
+      <div class="terminal-block" data-label="ARIA LOG">
+        <span class="t-warn">WARN</span> 外部節點同步嘗試 ×3 ／ <span class="t-danger">節點一</span>：攔截 ／ 節點二~三：<span class="t-danger">成功穿透</span><br>
+        <span class="t-quantum">INFO</span> 連線記錄已刪除 — 殘餘磁場重建中...<br>
+        <span class="t-entangle">ANOMALY</span> 量子簽名不匹配任何已知宇宙節點資料庫
+      </div>
+      <p>「把過去七十二小時的基線數據調出來，跟今晚的對比一下。」數據太一致了——像是有人複製了昨天的量測結果，貼在今天的時間戳上。這不是乾淨的數據。這是<span class="danger-text">偽造的寧靜</span>。</p>
+    </div>
+  </article>
+
+  <div class="ch-divider"><span class="ch-divider-symbol">· · ·</span></div>
+
+  <!-- ── CH2 ── -->
+  <article class="chapter" id="ch2">
+    <div class="ch-header">
+      <div class="ch-number">CH.02</div>
+      <h2 class="ch-title">後門的定義</h2>
+    </div>
+    <div class="ch-visual">
+      <canvas id="c2"></canvas>
+      <div class="visual-label">ENTANGLEMENT BACKDOOR TOPOLOGY</div>
+    </div>
+    <div class="ch-body">
+      <p>傳統的網路後門，需要在目標系統裡植入程式碼。需要建立連線。需要在流量裡留下痕跡。而量子糾纏不同。如果有人能夠在目標系統的量子基礎設施裡，預先植入處於糾纏態的粒子，那麼通訊就已經在物理層面上建立了。</p>
+      <p class="highlight">沒有連線請求。沒有握手協議。沒有封包。只有兩個粒子，跨越任何距離，靜靜地分享著彼此的狀態。</p>
+      <p>你永遠不知道對方在讀取你。因為量子力學的觀測原理告訴你：<span class="danger-text">觀測本身不一定會改變被觀測者的狀態</span>——如果那個觀測是用糾纏態完成的。</p>
+      <p>那三個連線——那不是入侵的開始。那是入侵早就結束了的證明。</p>
+    </div>
+  </article>
+
+  <div class="ch-divider"><span class="ch-divider-symbol">· · ·</span></div>
+
+  <!-- ── CH3 ── -->
+  <article class="chapter" id="ch3">
+    <div class="ch-header">
+      <div class="ch-number">CH.03</div>
+      <h2 class="ch-title">異常的幾何</h2>
+    </div>
+    <div class="ch-visual">
+      <canvas id="c3"></canvas>
+      <div class="visual-label">MULTIVERSE SIGNATURE ANALYSIS</div>
+    </div>
+    <div class="ch-body">
+      <p>蘇黎是個說話永遠比思考慢半拍的女人，但陳以諾知道那是一種刻意培養的習慣——她在說話之前，已經計算好了所有的可能性。</p>
+      <p>「這三個節點的量子簽名不符合任何已知格式，有兩種可能，」陳以諾說，「第一，有人偽造了全新的簽名系統。第二——」</p>
+      <p class="highlight">「它們的基本物理常數跟我們的不一樣，」蘇黎接過話頭。</p>
+      <div class="terminal-block" data-label="SIGNATURE DIFF">
+        <span class="t-quantum">REF</span>  普朗克常數 h = 6.62607015×10⁻³⁴ J·s [本宇宙]<br>
+        <span class="t-entangle">NODE-Ω</span> 普朗克常數 h = 6.62607015×10⁻³⁴ <span class="t-danger">+ δ</span> J·s<br>
+        <span class="t-warn">DELTA</span> δ = 2.7×10⁻³⁵ — 超出儀器精度範圍<br>
+        <span class="t-danger">VERDICT</span> 來源宇宙：<span class="t-danger">UNKNOWN / NON-LOCAL</span>
+      </div>
+      <p>如果多宇宙詮釋是正確的——它是正確的，2134年就已經有了直接實驗證據——那麼就存在著無數個宇宙，而某個宇宙已經發展出了<span class="danger-text">跨宇宙量子通訊技術</span>。</p>
+    </div>
+  </article>
+
+  <div class="ch-divider"><span class="ch-divider-symbol">· · ·</span></div>
+
+  <!-- ── CH4 ── -->
+  <article class="chapter" id="ch4">
+    <div class="ch-header">
+      <div class="ch-number">CH.04</div>
+      <h2 class="ch-title">威脅情報的邊界</h2>
+    </div>
+    <div class="ch-visual">
+      <canvas id="c4"></canvas>
+      <div class="visual-label">INVISIBLE PERSISTENCE · 17 YEARS</div>
+    </div>
+    <div class="ch-body">
+      <p>傳統的資安事件調查，有標準流程：識別入侵指標（IoC），追蹤橫向移動，找到最初的入侵向量，評估數據外洩範圍，然後修補漏洞。</p>
+      <p class="highlight">但這次沒有漏洞可以修補。因為這個後門根本不在任何程式碼裡。它在物理層。它在現實的基礎設施本身裡。</p>
+      <p>「怎麼找？」陳以諾說，「你要在整個量子計算基礎設施裡，找到幾個原子級別的粒子，而且這些粒子的量子態跟周圍的粒子幾乎完全相同，只有微小的物理常數差異。」</p>
+      <div class="terminal-block" data-label="SCAN ESTIMATE">
+        <span class="t-quantum">TASK</span>  全量子位元掃描 / 精度閾值 10⁻³⁵<br>
+        <span class="t-warn">ETA</span>   <span class="t-danger">17 年 / 214 天 / 8 小時 / 32 分</span><br>
+        <span class="t-danger">STATUS</span> 後門持續開放中 — 無法在有效時間內修復<br>
+        <span class="t-entangle">NOTE</span>  主動掃描本身可能觸發攻擊者警覺
+      </div>
+      <p>「在這十七年裡，那個後門一直開著，」蘇黎說。然後更糟的念頭浮現——如果他們在我們的研究成果裡，提前預埋了他們想要的設計，讓我們以為是我們自己想出來的東西，其實是他們讓我們想出來的？</p>
+    </div>
+  </article>
+
+  <div class="ch-divider"><span class="ch-divider-symbol">· · ·</span></div>
+
+  <!-- ── CH5 ── -->
+  <article class="chapter" id="ch5">
+    <div class="ch-header">
+      <div class="ch-number">CH.05</div>
+      <h2 class="ch-title">攻擊者的畫像</h2>
+    </div>
+    <div class="ch-visual">
+      <canvas id="c5"></canvas>
+      <div class="visual-label">APT-Ω THREAT ACTOR MODEL</div>
+    </div>
+    <div class="ch-body">
+      <p>「如果你是一個擁有跨宇宙量子通訊能力的文明，你最想從另一個宇宙獲得什麼？」沒有攻擊者的樣貌，就沒有辦法防禦。這是陳以諾在這一行待了二十年的基本認識。</p>
+      <p>主動入侵——在目標系統裡植入後門，主動干預數據——意味著你不只是要<span class="highlight">偷</span>，你還要<span class="danger-text">改</span>。</p>
+      <p>「改歷史，」陳以諾說，「改技術發展的軌跡。如果你能讓一個平行宇宙的技術，沿著你設計好的方向發展，那麼幾十年後，他們建造出來的基礎設施，本質上就是你的——只是由他們出的工。」</p>
+      <p>「APT，」蘇黎說，「高級持續性威脅。但是宇宙級的。」時間尺度不是幾個月或幾年——是幾十年甚至幾個世紀。</p>
+      <p class="highlight">「我們，可能只是他們的一塊硬碟。」</p>
+    </div>
+  </article>
+
+  <div class="ch-divider"><span class="ch-divider-symbol">· · ·</span></div>
+
+  <!-- ── CH6 ── -->
+  <article class="chapter" id="ch6">
+    <div class="ch-header">
+      <div class="ch-number">CH.06</div>
+      <h2 class="ch-title">防禦者的兩難</h2>
+    </div>
+    <div class="ch-visual">
+      <canvas id="c6"></canvas>
+      <div class="visual-label">DEFENDER'S PARADOX · OBSERVER EFFECT</div>
+    </div>
+    <div class="ch-body">
+      <p>量子資安的鐵律：<span class="highlight">你無法同時確認系統的安全性，以及不改變系統的狀態。</span></p>
+      <p>任何主動的安全掃描，都會改變被掃描的量子態，可能反而觸發攻擊者的警覺機制。任何防禦行動，都可能被攻擊者觀測到，並且提前調整策略。</p>
+      <p>「資安最大的漏洞從來不是技術，是溝通，」陳以諾說。讓防禦者因為擔心被嘲笑而閉嘴——讓威脅停留在一個只有少數人知道、但沒有人能公開討論的<span class="danger-text">灰色地帶</span>。</p>
+      <p>「我們能做的，是確保我們<span class="highlight">知道我們不安全</span>。不要假裝系統是可信任的。不要讓自信變成漏洞。承認不確定性，並且在不確定性之中，仍然繼續行動。」</p>
+    </div>
+  </article>
+
+  <div class="ch-divider"><span class="ch-divider-symbol">· · ·</span></div>
+
+  <!-- ── CH7 ── -->
+  <article class="chapter" id="ch7">
+    <div class="ch-header">
+      <div class="ch-number">CH.07</div>
+      <h2 class="ch-title">第一份報告</h2>
+    </div>
+    <div class="ch-visual">
+      <canvas id="c7"></canvas>
+      <div class="visual-label">REPORT SUPPRESSION PATTERN</div>
+    </div>
+    <div class="ch-body">
+      <p>報告的標題是：《關於非本宇宙量子節點入侵本宇宙量子通訊基礎設施之可能性：初步調查報告》。</p>
+      <div class="terminal-block" data-label="EVENT LOG">
+        <span class="t-danger">REJECTED</span> 全球九大量子計算研究機構聯名駁斥 — 「缺乏嚴格實驗設計的推論性假設」<br>
+        <span class="t-warn">NOTICE</span>  院長約談 — 建議「重新審視研究方法的嚴謹性」<br>
+        <span class="t-danger">CRITICAL</span> ARIA 計畫外系統重置 T+6hr — 殘餘磁場數據 <span class="t-danger">已清除</span><br>
+        <span class="t-warn">HR</span>     蘇黎申請調職 — 理由：個人因素 [<span class="t-entangle">真實原因：UNKNOWN</span>]
+      </div>
+      <p>陳以諾繼續工作。因為在量子力學裡，有一條最基本的定律：</p>
+      <p class="highlight">粒子的糾纏態，一旦建立，不會因為你不觀測它而消失。它只是等待，靜靜地，在每一個可能的宇宙裡，維持著那條看不見的連線。</p>
+    </div>
+  </article>
+
+  <div class="ch-divider"><span class="ch-divider-symbol">· · ·</span></div>
+
+  <!-- ── CH8 ── -->
+  <article class="chapter" id="ch8">
+    <div class="ch-header">
+      <div class="ch-number">CH.08</div>
+      <h2 class="ch-title">最後的數據</h2>
+    </div>
+    <div class="ch-visual">
+      <canvas id="c8"></canvas>
+      <div class="visual-label">UNKNOWN TRANSMISSION · DECODED</div>
+    </div>
+    <div class="ch-body">
+      <p>報告提交後的第三十一天，陳以諾在量子噪音裡，發現了一個重複出現的結構，頻率完全符合某種資訊編碼的特徵。他花了六個小時解碼。</p>
+      <div class="terminal-block" data-label="DECODED MESSAGE">
+        <span class="t-entangle">MSG</span>  你已經找到了。這正是我們希望你找到的。<br>
+        <span class="t-entangle">MSG</span>  你的報告已經被我們確認收到。<br>
+        <span class="t-entangle">MSG</span>  你問的那些問題，都是正確的問題。<br>
+        <span class="t-quantum">&gt;</span>   但你需要考慮一種可能：<br>
+        <span class="t-quantum">&gt;</span>   寫下這段文字的，可能不是你的敵人。<br>
+        <span class="t-danger">&gt;</span>   <span class="t-danger">而你認為在保護你的人，可能才是。</span>
+      </div>
+      <p>陳以諾盯著螢幕上的文字，很長很長時間。他不知道這段訊息是真的。他不知道這是更精密的社會工程攻擊。他不知道ARIA是否仍在按照原本的設計運作。</p>
+      <p class="highlight">在量子力學裡，這叫做「觀測者效應」：你觀測這個系統的行為，本身就改變了系統的狀態。你永遠無法確定，你看到的，是系統本來的樣子，還是你觀測行為所造成的樣子。</p>
+      <p>他把那段文字發送給了他唯一還保持聯絡的人——一個每天只是在小學教書的老同學。附帶的訊息只有一句話：<span class="danger-text">「如果我突然消失，請把這個給所有你能聯絡到的人。」</span></p>
+    </div>
+  </article>
+
+  <!-- ════ POSTSCRIPT ════ -->
+  <div class="postscript">
+    <h3>後記 · Postscript</h3>
+    <p>這個故事裡最危險的威脅，不是那個跨宇宙的 APT。</p>
+    <p>而是：陳以諾找到了真正的漏洞，卻沒有人相信他。</p>
+    <p>在現實的資安世界裡，每一天都有人在說「我發現了一個問題」，然後被體制、被官僚、被商業利益，以「缺乏證據」為由沉默。</p>
+    <p class="final-line">最大的後門，從來不在技術層。<br>它在人與人之間，那個叫做「信任」的量子糾纏裡。</p>
+  </div>
+
+</main>
+
+<footer>
+  <div>糾纏態：第零號入侵 · ENTANGLEMENT ZERO · APT-Ω</div>
+  <div style="margin-top:0.8rem">宇宙編號 <span>Ω-4471</span> · 分類等級 <span>TOP SECRET // COSMIC</span></div>
+</footer>
+
+<!-- ════════════════════════════════ SCRIPTS ════════════════════════════════ -->
+<script>
+/* ─── UTILITIES ─── */
+const PI2 = Math.PI * 2;
+const rand = (a, b) => Math.random() * (b - a) + a;
+const lerp = (a, b, t) => a + (b - a) * t;
+
+function setupCanvas(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return null;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  canvas._w = rect.width;
+  canvas._h = rect.height;
+  return ctx;
+}
+
+/* ─── HERO CANVAS: entangled particle web ─── */
+(function heroAnim() {
+  const canvas = document.getElementById('hero-canvas');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+
+  function resize() {
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const ctx = canvas.getContext('2d');
+  const COLORS = ['#00e5ff', '#7b2fff', '#ff2d55'];
+  const PAIRS = 80;
+
+  let particles = [];
+  for (let i = 0; i < PAIRS * 2; i++) {
+    particles.push({
+      x: rand(0, window.innerWidth),
+      y: rand(0, window.innerHeight),
+      vx: rand(-0.3, 0.3),
+      vy: rand(-0.2, 0.2),
+      r: rand(1.5, 3.5),
+      color: COLORS[Math.floor(i / 2) % COLORS.length],
+      pair: Math.floor(i / 2),
+      phase: rand(0, PI2)
+    });
+  }
+
+  let t = 0;
+  function draw() {
+    const W = window.innerWidth, H = window.innerHeight;
+    ctx.clearRect(0, 0, W * dpr, H * dpr);
+    ctx.save();
+    ctx.scale(dpr, dpr);
+
+    // draw entanglement lines between pairs
+    for (let i = 0; i < PAIRS; i++) {
+      const a = particles[i * 2];
+      const b = particles[i * 2 + 1];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      if (dist < 350) {
+        const alpha = (1 - dist / 350) * 0.12 * (0.5 + 0.5 * Math.sin(t * 0.02 + i));
+        const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+        grad.addColorStop(0, a.color.replace(')', `,${alpha})`).replace('rgb', 'rgba').replace('#00e5ff', `rgba(0,229,255,${alpha})`).replace('#7b2fff', `rgba(123,47,255,${alpha})`).replace('#ff2d55', `rgba(255,45,85,${alpha})`));
+        grad.addColorStop(1, b.color.replace(')', `,${alpha})`).replace('rgb', 'rgba').replace('#00e5ff', `rgba(0,229,255,${alpha})`).replace('#7b2fff', `rgba(123,47,255,${alpha})`).replace('#ff2d55', `rgba(255,45,85,${alpha})`));
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.strokeStyle = `rgba(0,229,255,${alpha})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+
+    // draw particles
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = W;
+      if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H;
+      if (p.y > H) p.y = 0;
+
+      const pulse = 0.6 + 0.4 * Math.sin(t * 0.03 + p.phase);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * pulse, 0, PI2);
+      if (p.color === '#00e5ff') ctx.fillStyle = `rgba(0,229,255,${0.7 * pulse})`;
+      else if (p.color === '#7b2fff') ctx.fillStyle = `rgba(123,47,255,${0.7 * pulse})`;
+      else ctx.fillStyle = `rgba(255,45,85,${0.5 * pulse})`;
+      ctx.fill();
+    });
+
+    ctx.restore();
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── CH1: Baseline anomaly — waveform that's TOO perfect, then glitches ─── */
+(function ch1Anim() {
+  const ctx = setupCanvas('c1');
+  if (!ctx) return;
+  const W = ctx.canvas._w, H = ctx.canvas._h;
+  let t = 0;
+
+  function draw() {
+    ctx.fillStyle = '#060d14';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(26,52,72,0.4)';
+    ctx.lineWidth = 0.5;
+    for (let y = 0; y < H; y += 30) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+
+    // "Perfect" reference wave (too perfect — copied data)
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(0,229,255,0.25)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < W; x++) {
+      const y = H / 2 + Math.sin((x * 0.04) + 0) * 50;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Live wave — same as reference but with occasional glitch
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(0,229,255,0.9)';
+    ctx.lineWidth = 1.5;
+    for (let x = 0; x < W; x++) {
+      const base = H / 2 + Math.sin((x * 0.04) + 0) * 50;
+      // Glitch zone
+      const glitch = (x > W * 0.55 && x < W * 0.7)
+        ? (Math.sin(t * 0.08 + x * 0.3) > 0.92 ? rand(-20, 20) : 0)
+        : 0;
+      const y = base + glitch;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Anomaly marker
+    const anomX = W * 0.62;
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(255,45,85,${0.5 + 0.5 * Math.sin(t * 0.05)})`;
+    ctx.setLineDash([4, 4]);
+    ctx.moveTo(anomX, 0); ctx.lineTo(anomX, H);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font = `${10 / (window.devicePixelRatio || 1)}px 'Share Tech Mono'`;
+    ctx.fillStyle = `rgba(255,45,85,${0.6 + 0.4 * Math.sin(t * 0.05)})`;
+    ctx.fillText('ANOMALY DETECTED', anomX + 8, 20);
+
+    // Correlation label
+    ctx.fillStyle = 'rgba(0,229,255,0.5)';
+    ctx.fillText('CORR: 0.99800  [EXPECTED: ≤0.994]', 16, H - 16);
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── CH2: Two entangled particles connected through space/universe ─── */
+(function ch2Anim() {
+  const ctx = setupCanvas('c2');
+  if (!ctx) return;
+  const W = ctx.canvas._w, H = ctx.canvas._h;
+  let t = 0;
+
+  function draw() {
+    ctx.fillStyle = '#060d14';
+    ctx.fillRect(0, 0, W, H);
+
+    const cx = W / 2, cy = H / 2;
+    const spread = W * 0.32;
+
+    // Universe boundary glow left (our universe)
+    const grad1 = ctx.createRadialGradient(cx - spread, cy, 0, cx - spread, cy, 80);
+    grad1.addColorStop(0, 'rgba(0,229,255,0.12)');
+    grad1.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad1;
+    ctx.beginPath(); ctx.arc(cx - spread, cy, 80, 0, PI2); ctx.fill();
+
+    // Universe boundary glow right (other universe)
+    const grad2 = ctx.createRadialGradient(cx + spread, cy, 0, cx + spread, cy, 80);
+    grad2.addColorStop(0, 'rgba(123,47,255,0.15)');
+    grad2.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad2;
+    ctx.beginPath(); ctx.arc(cx + spread, cy, 80, 0, PI2); ctx.fill();
+
+    // Entanglement line — animated dash wave
+    const wave = Math.sin(t * 0.04) * 20;
+    ctx.beginPath();
+    ctx.setLineDash([6, 4]);
+    ctx.lineDashOffset = -t * 0.5;
+    const lineAlpha = 0.4 + 0.3 * Math.sin(t * 0.06);
+    ctx.strokeStyle = `rgba(0,229,255,${lineAlpha})`;
+    ctx.lineWidth = 1.5;
+    ctx.moveTo(cx - spread, cy);
+    ctx.bezierCurveTo(cx - spread / 2, cy + wave, cx + spread / 2, cy - wave, cx + spread, cy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Particle A (our universe)
+    const pulsA = 0.7 + 0.3 * Math.sin(t * 0.07);
+    ctx.beginPath();
+    ctx.arc(cx - spread, cy, 10 * pulsA, 0, PI2);
+    ctx.fillStyle = `rgba(0,229,255,${pulsA})`;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx - spread, cy, 18 * pulsA, 0, PI2);
+    ctx.strokeStyle = `rgba(0,229,255,${0.2 * pulsA})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Particle B (other universe) — same phase but mirrored
+    const pulsB = 0.7 + 0.3 * Math.sin(t * 0.07 + Math.PI);
+    ctx.beginPath();
+    ctx.arc(cx + spread, cy, 10 * pulsB, 0, PI2);
+    ctx.fillStyle = `rgba(123,47,255,${pulsB})`;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx + spread, cy, 18 * pulsB, 0, PI2);
+    ctx.strokeStyle = `rgba(123,47,255,${0.2 * pulsB})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Labels
+    ctx.font = '10px Share Tech Mono';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(0,229,255,0.5)';
+    ctx.fillText('宇宙 Ω-4471', cx - spread, cy + 40);
+    ctx.fillStyle = 'rgba(123,47,255,0.6)';
+    ctx.fillText('宇宙 UNKNOWN', cx + spread, cy + 40);
+    ctx.fillStyle = 'rgba(255,45,85,0.6)';
+    ctx.fillText('NO HANDSHAKE · NO PACKET · NO LOG', cx, H - 18);
+    ctx.textAlign = 'left';
+
+    // "Backdoor open" status
+    const blink = Math.sin(t * 0.08) > 0;
+    if (blink) {
+      ctx.fillStyle = 'rgba(255,45,85,0.8)';
+      ctx.fillText('BACKDOOR: OPEN', 14, 20);
+    }
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── CH3: Multiverse signature comparison — two overlapping spectra ─── */
+(function ch3Anim() {
+  const ctx = setupCanvas('c3');
+  if (!ctx) return;
+  const W = ctx.canvas._w, H = ctx.canvas._h;
+  let t = 0;
+
+  function draw() {
+    ctx.fillStyle = '#060d14';
+    ctx.fillRect(0, 0, W, H);
+
+    const bands = 60;
+    const bw = W / bands;
+
+    for (let i = 0; i < bands; i++) {
+      const x = i * bw;
+      // Known universe spectrum
+      const h1 = (Math.sin(i * 0.18) * 0.5 + 0.5) * H * 0.5 + 20;
+      ctx.fillStyle = 'rgba(0,229,255,0.3)';
+      ctx.fillRect(x, H - h1, bw - 2, h1);
+
+      // Unknown universe spectrum — slight offset in frequency
+      const delta = Math.sin(t * 0.01) * 3;
+      const h2 = (Math.sin((i + delta) * 0.18 + 0.15) * 0.5 + 0.5) * H * 0.5 + 20;
+      ctx.fillStyle = 'rgba(123,47,255,0.35)';
+      ctx.fillRect(x, H - h2, bw - 2, h2);
+
+      // Mismatch highlight
+      if (Math.abs(h1 - h2) > H * 0.12) {
+        ctx.fillStyle = `rgba(255,45,85,${0.15 + 0.1 * Math.sin(t * 0.05 + i)})`;
+        ctx.fillRect(x, 0, bw - 2, H);
+      }
+    }
+
+    // Scan line
+    const scanX = (t * 2) % W;
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(0,229,255,0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.moveTo(scanX, 0); ctx.lineTo(scanX, H);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Legend
+    ctx.font = '10px Share Tech Mono';
+    ctx.fillStyle = 'rgba(0,229,255,0.7)';
+    ctx.fillText('■ 本宇宙量子簽名', 16, 20);
+    ctx.fillStyle = 'rgba(123,47,255,0.7)';
+    ctx.fillText('■ 未知來源簽名', 16, 36);
+    ctx.fillStyle = 'rgba(255,45,85,0.7)';
+    ctx.fillText('■ 常數偏差區域', 16, 52);
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── CH4: Time counter — 17 year scan, open backdoor pulse ─── */
+(function ch4Anim() {
+  const ctx = setupCanvas('c4');
+  if (!ctx) return;
+  const W = ctx.canvas._w, H = ctx.canvas._h;
+  let t = 0;
+
+  function draw() {
+    ctx.fillStyle = '#060d14';
+    ctx.fillRect(0, 0, W, H);
+
+    // Background grid
+    ctx.strokeStyle = 'rgba(26,52,72,0.3)';
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+    // Progress bar — impossibly long task
+    const barW = W * 0.7, barX = W * 0.15, barY = H * 0.42, barH = 8;
+    ctx.fillStyle = 'rgba(26,52,72,0.8)';
+    ctx.fillRect(barX, barY, barW, barH);
+    // Tiny progress (17 years = imperceptible)
+    const prog = (Math.sin(t * 0.002) * 0.5 + 0.5) * 0.003;
+    ctx.fillStyle = 'rgba(0,229,255,0.7)';
+    ctx.fillRect(barX, barY, barW * prog, barH);
+
+    // Progress border
+    ctx.strokeStyle = 'rgba(0,229,255,0.2)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(barX, barY, barW, barH);
+
+    ctx.font = '11px Share Tech Mono';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(0,229,255,0.5)';
+    ctx.fillText('全量子位元掃描進度', W / 2, barY - 12);
+    ctx.fillStyle = 'rgba(255,45,85,0.8)';
+    ctx.fillText(`估計完成時間：17 年 / 預計 ${2157 + 17} 年`, W / 2, barY + 28);
+
+    // Backdoor status — pulsing open indicator
+    const pulse = 0.5 + 0.5 * Math.sin(t * 0.08);
+    ctx.fillStyle = `rgba(255,45,85,${pulse * 0.15})`;
+    ctx.beginPath();
+    ctx.arc(W / 2, H * 0.7, 40 + pulse * 15, 0, PI2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(W / 2, H * 0.7, 8, 0, PI2);
+    ctx.fillStyle = `rgba(255,45,85,${pulse})`;
+    ctx.fill();
+    ctx.fillStyle = `rgba(255,45,85,${0.7 + 0.3 * pulse})`;
+    ctx.fillText('◉  BACKDOOR OPEN', W / 2, H * 0.7 + 30);
+
+    // Orbiting threat particles
+    for (let i = 0; i < 6; i++) {
+      const angle = (PI2 / 6) * i + t * 0.015;
+      const rx = W / 2 + Math.cos(angle) * 60;
+      const ry = H * 0.7 + Math.sin(angle) * 25;
+      ctx.beginPath();
+      ctx.arc(rx, ry, 3, 0, PI2);
+      ctx.fillStyle = `rgba(123,47,255,${0.6 + 0.4 * Math.sin(t * 0.05 + i)})`;
+      ctx.fill();
+    }
+
+    ctx.textAlign = 'left';
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── CH5: Cosmic APT web — nodes across universes, supply chain contamination ─── */
+(function ch5Anim() {
+  const ctx = setupCanvas('c5');
+  if (!ctx) return;
+  const W = ctx.canvas._w, H = ctx.canvas._h;
+  let t = 0;
+
+  const nodes = [
+    { x: W * 0.5, y: H * 0.5, r: 10, label: 'Ω-4471\n(我們)', color: '#00e5ff', type: 'target' },
+    { x: W * 0.15, y: H * 0.2, r: 7, label: 'Ω-APT', color: '#7b2fff', type: 'attacker' },
+    { x: W * 0.85, y: H * 0.2, r: 5, label: 'NODE-A', color: '#7b2fff', type: 'relay' },
+    { x: W * 0.1, y: H * 0.75, r: 5, label: 'NODE-B', color: '#7b2fff', type: 'relay' },
+    { x: W * 0.9, y: H * 0.7, r: 5, label: 'NODE-C', color: '#7b2fff', type: 'relay' },
+    { x: W * 0.3, y: H * 0.85, r: 4, label: 'TECH-X', color: '#ffaa00', type: 'infected' },
+    { x: W * 0.7, y: H * 0.8, r: 4, label: 'INFRA-Y', color: '#ffaa00', type: 'infected' },
+    { x: W * 0.5, y: H * 0.15, r: 4, label: 'RELAY-Z', color: '#ff2d55', type: 'c2' },
+  ];
+
+  function draw() {
+    ctx.fillStyle = '#060d14';
+    ctx.fillRect(0, 0, W, H);
+
+    // Draw edges
+    const edges = [[0,1],[0,2],[0,3],[0,4],[1,2],[1,7],[3,5],[4,6],[7,0]];
+    edges.forEach(([a, b]) => {
+      const na = nodes[a], nb = nodes[b];
+      const alpha = 0.15 + 0.08 * Math.sin(t * 0.04 + a);
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(123,47,255,${alpha})`;
+      ctx.setLineDash([4, 6]);
+      ctx.lineDashOffset = -t * 0.3;
+      ctx.lineWidth = 0.8;
+      ctx.moveTo(na.x, na.y);
+      ctx.lineTo(nb.x, nb.y);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // Draw data flow particles along edges
+    edges.forEach(([a, b], ei) => {
+      const na = nodes[a], nb = nodes[b];
+      const progress = ((t * 0.01 + ei * 0.3) % 1);
+      const px = lerp(na.x, nb.x, progress);
+      const py = lerp(na.y, nb.y, progress);
+      ctx.beginPath();
+      ctx.arc(px, py, 2.5, 0, PI2);
+      ctx.fillStyle = 'rgba(255,45,85,0.9)';
+      ctx.fill();
+    });
+
+    // Draw nodes
+    nodes.forEach((n, i) => {
+      const pulse = 0.7 + 0.3 * Math.sin(t * 0.06 + i);
+      // Glow
+      const grd = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 3);
+      const col = n.color.replace('#00e5ff','0,229,255').replace('#7b2fff','123,47,255').replace('#ffaa00','255,170,0').replace('#ff2d55','255,45,85');
+      grd.addColorStop(0, `rgba(${col},0.25)`);
+      grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 3, 0, PI2); ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r * pulse, 0, PI2);
+      ctx.fillStyle = n.color;
+      ctx.fill();
+
+      ctx.font = '9px Share Tech Mono';
+      ctx.fillStyle = 'rgba(210,232,240,0.6)';
+      ctx.textAlign = 'center';
+      ctx.fillText(n.label.split('\n')[0], n.x, n.y + n.r * 2 + 12);
+    });
+    ctx.textAlign = 'left';
+
+    ctx.font = '10px Share Tech Mono';
+    ctx.fillStyle = 'rgba(255,45,85,0.6)';
+    ctx.fillText('SUPPLY CHAIN: COMPROMISED', 14, H - 14);
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── CH6: Defender's paradox — observation disturbs the system ─── */
+(function ch6Anim() {
+  const ctx = setupCanvas('c6');
+  if (!ctx) return;
+  const W = ctx.canvas._w, H = ctx.canvas._h;
+  let t = 0;
+  let scanning = false;
+  let scanStart = 0;
+
+  function draw() {
+    ctx.fillStyle = '#060d14';
+    ctx.fillRect(0, 0, W, H);
+
+    // Stable system before scan
+    const disturbance = scanning ? Math.min((t - scanStart) * 0.03, 1) : 0;
+
+    // Draw quantum field — wave pattern
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 18; col++) {
+        const x = (col + 0.5) * (W / 18);
+        const y = (row + 0.5) * (H / 8);
+        const base = Math.sin(t * 0.02 + col * 0.4 + row * 0.6) * 0.5 + 0.5;
+        const distort = disturbance * (Math.random() * 2 - 1) * 0.5;
+        const val = Math.max(0, Math.min(1, base + distort));
+
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, PI2);
+        if (disturbance > 0.3) {
+          ctx.fillStyle = `rgba(255,45,85,${val * 0.7 * disturbance})`;
+        } else {
+          ctx.fillStyle = `rgba(0,229,255,${val * 0.7})`;
+        }
+        ctx.fill();
+      }
+    }
+
+    // Scan beam
+    if (scanning) {
+      const scanX = ((t - scanStart) * 3) % W;
+      const grad = ctx.createLinearGradient(scanX - 20, 0, scanX + 5, 0);
+      grad.addColorStop(0, 'transparent');
+      grad.addColorStop(1, `rgba(255,170,0,${0.4 * disturbance})`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(scanX - 20, 0, 25, H);
+
+      // Wake of disturbance
+      ctx.fillStyle = `rgba(255,45,85,${0.06 * disturbance})`;
+      ctx.fillRect(0, 0, scanX, H);
+    }
+
+    // Trigger scan periodically
+    if (t % 200 === 100) { scanning = true; scanStart = t; }
+    if (t % 200 === 0) { scanning = false; }
+
+    // Labels
+    ctx.font = '10px Share Tech Mono';
+    ctx.fillStyle = scanning ? 'rgba(255,170,0,0.8)' : 'rgba(0,229,255,0.5)';
+    ctx.fillText(scanning ? '⚠ ACTIVE SCAN — SYSTEM STATE DISTURBED' : '● PASSIVE MONITOR — SYSTEM STABLE', 14, H - 14);
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── CH7: Report signal lost — descending noise / suppression ─── */
+(function ch7Anim() {
+  const ctx = setupCanvas('c7');
+  if (!ctx) return;
+  const W = ctx.canvas._w, H = ctx.canvas._h;
+  let t = 0;
+
+  function draw() {
+    ctx.fillStyle = '#060d14';
+    ctx.fillRect(0, 0, W, H);
+
+    // Signal amplitude degrading over time
+    const decay = Math.max(0.05, 1 - (t % 300) / 300);
+
+    // Signal wave
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(0,229,255,${decay * 0.9})`;
+    ctx.lineWidth = 1.5;
+    for (let x = 0; x < W; x++) {
+      const noise = (Math.random() - 0.5) * (1 - decay) * 60;
+      const y = H / 2 + Math.sin(x * 0.06 + t * 0.03) * 60 * decay + noise;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Noise floor rising
+    for (let i = 0; i < 80; i++) {
+      const x = rand(0, W), y = rand(H * 0.3, H * 0.7);
+      ctx.beginPath();
+      ctx.arc(x, y, rand(0.5, 2), 0, PI2);
+      ctx.fillStyle = `rgba(255,45,85,${(1 - decay) * rand(0.1, 0.4)})`;
+      ctx.fill();
+    }
+
+    // Status text entries
+    const entries = [
+      { text: 'REPORT SUBMITTED', color: 'rgba(0,229,255,0.7)', t: 0 },
+      { text: 'REJECTED BY COMMITTEE', color: 'rgba(255,45,85,0.8)', t: 60 },
+      { text: 'ARIA: SYSTEM RESET', color: 'rgba(255,170,0,0.8)', t: 120 },
+      { text: 'DATA: PURGED', color: 'rgba(255,45,85,0.9)', t: 160 },
+      { text: 'INVESTIGATOR: REASSIGNED', color: 'rgba(255,170,0,0.7)', t: 200 },
+      { text: 'SIGNAL: LOST', color: 'rgba(255,45,85,0.5)', t: 250 },
+    ];
+
+    ctx.font = '10px Share Tech Mono';
+    const cycle = t % 300;
+    entries.forEach((e, i) => {
+      if (cycle > e.t) {
+        const alpha = Math.min(1, (cycle - e.t) / 30);
+        ctx.fillStyle = e.color.replace(')', `,${alpha})`).replace('rgba', 'rgba');
+        ctx.fillText(e.text, 20, 24 + i * 18);
+      }
+    });
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── CH8: Decoded message appears — glitch text decryption ─── */
+(function ch8Anim() {
+  const ctx = setupCanvas('c8');
+  if (!ctx) return;
+  const W = ctx.canvas._w, H = ctx.canvas._h;
+  let t = 0;
+
+  const lines = [
+    '你已經找到了。這正是我們希望你找到的。',
+    '你的報告已經被我們確認收到。',
+    '你問的那些問題，都是正確的問題。',
+    '寫下這段文字的，可能不是你的敵人。',
+    '而你認為在保護你的人，可能才是。',
+  ];
+
+  const CHARS = '01アイウエオカキクケコ∅∑∇∞⊗⊕⊖□◇△▽';
+
+  function glitchChar(final, progress, idx) {
+    if (Math.random() > progress) {
+      return CHARS[Math.floor(Math.random() * CHARS.length)];
+    }
+    return final;
+  }
+
+  function draw() {
+    ctx.fillStyle = 'rgba(6,13,20,0.85)';
+    ctx.fillRect(0, 0, W, H);
+
+    // Background static
+    for (let i = 0; i < 30; i++) {
+      ctx.fillStyle = `rgba(123,47,255,${rand(0.02, 0.06)})`;
+      ctx.fillRect(rand(0, W), rand(0, H), rand(1, W * 0.4), 1);
+    }
+
+    ctx.font = '13px Share Tech Mono';
+    const totalDur = 240;
+    const perLine = totalDur / lines.length;
+
+    lines.forEach((line, li) => {
+      const lineStart = li * perLine;
+      const progress = Math.max(0, Math.min(1, (t - lineStart) / perLine));
+      if (progress === 0) return;
+
+      let rendered = '';
+      for (let ci = 0; ci < line.length; ci++) {
+        const charProg = Math.max(0, Math.min(1, (progress * line.length - ci) / 1.5));
+        rendered += glitchChar(line[ci], charProg, ci);
+      }
+
+      const alpha = Math.min(1, progress * 3);
+      const isLast = li === lines.length - 1;
+      ctx.fillStyle = isLast
+        ? `rgba(255,45,85,${alpha})`
+        : li < 3
+          ? `rgba(123,47,255,${alpha})`
+          : `rgba(0,229,255,${alpha})`;
+
+      ctx.fillText(`> ${rendered}`, 20, 50 + li * 40);
+    });
+
+    // Cursor blink
+    if (Math.floor(t / 20) % 2 === 0) {
+      ctx.fillStyle = 'rgba(0,229,255,0.8)';
+      const cy = 50 + Math.min(lines.length - 1, Math.floor(t / perLine)) * 40;
+      ctx.fillRect(20, cy + 4, 8, 14);
+    }
+
+    // Loop
+    if (t > totalDur + 60) t = 0;
+
+    t++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─── INTERSECTION OBSERVER: fade-in chapters ─── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.chapter').forEach(el => observer.observe(el));
+
+</script>
+</body>
+</html>
