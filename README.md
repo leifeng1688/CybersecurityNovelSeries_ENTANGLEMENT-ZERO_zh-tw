@@ -1,1 +1,1 @@
-# CybersecurityNovelSeries_ENTANGLEMENT-ZERO_zh-tw
+資安小說系列一《糾纏態：第零號入侵》
